@@ -1,0 +1,63 @@
+CLAUDE CODE VALIDATION PROMPT
+================================
+
+Copy and paste this exact prompt into Claude Code to validate your deployment:
+
+---
+
+You are a DevOps Architect reviewing a HIPAA-compliant backend system I've configured using Azure + Python (FastAPI). 
+
+I've already completed the following:
+✅ Azure Key Vault set up with these secrets:
+
+1. `postgres-server`: [YOUR_POSTGRES_SERVER]
+2. `postgres-user`: [YOUR_POSTGRES_USER]
+3. `postgres-password`: [YOUR_POSTGRES_PASSWORD]
+4. `postgres-db`: [YOUR_POSTGRES_DATABASE]
+5. `postgres-port`: [YOUR_POSTGRES_PORT]
+6. `azure-speech-key`: [YOUR_AZURE_SPEECH_KEY]
+7. `azure-speech-endpoint`: [YOUR_AZURE_SPEECH_ENDPOINT]
+8. `openai-api-key`: [YOUR_OPENAI_API_KEY]
+9. `azure-storage-account-name`: [YOUR_STORAGE_ACCOUNT_NAME]
+10. `azure-storage-account-key`: [YOUR_STORAGE_ACCOUNT_KEY]
+11. `azure-blob-container-name`: [YOUR_BLOB_CONTAINER_NAME]
+
+✅ The FastAPI backend is updated to load from Key Vault using `DefaultAzureCredential`
+✅ The app is deployed in VS Code locally (via Cloud Code or manually)
+
+🎯 YOUR TASK:
+- Validate all required inputs are present and correctly named
+- Tell me exactly what I'm missing (if anything)
+- Show me the correct structure of `config.py` or `.env` loading
+- Confirm this setup is ready to run the backend fully
+- If anything is not injected properly (e.g., speech or storage), point it out with example fix
+- If anything is missing in the frontend, backend, or auth, list it precisely
+- Provide a green ✅ checklist showing what's ready and what still needs attention
+
+Output clearly. Pretend you are my CTO reviewing the system for production go-live.
+
+---
+
+ADDITIONAL CONTEXT:
+The system includes:
+- FastAPI backend with voice-to-SOAP functionality
+- Azure Speech-to-Text integration
+- OpenAI GPT-4 for SOAP note generation
+- PostgreSQL database for data persistence
+- HIPAA-compliant security and audit logging
+- Frontend web interface for voice recording
+
+Project structure:
+- Backend code in Python with FastAPI
+- Environment variables in .env file
+- Azure Key Vault for production secrets
+- Simple secret manager for local development
+- Complete API endpoints for voice processing
+
+Expected workflow:
+1. User records voice via web interface
+2. Audio uploaded to FastAPI backend
+3. Azure Speech Service transcribes audio
+4. OpenAI generates structured SOAP note
+5. Data saved to PostgreSQL database
+6. Complete medical documentation returned
