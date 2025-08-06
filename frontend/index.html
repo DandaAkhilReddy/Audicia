@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audicia SOAP Note System - Enterprise Medical Documentation</title>
+    <meta name="description" content="Professional SOAP Note Management System for Healthcare Providers">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #667eea;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-bell {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notification-bell:hover {
+            background: #e0e0e0;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .main-container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .soap-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .soap-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+        }
+
+        .soap-header h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .soap-header p {
+            opacity: 0.9;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .patient-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .soap-sections {
+            padding: 30px;
+        }
+
+        .soap-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .subjective-icon { background: #4CAF50; }
+        .objective-icon { background: #2196F3; }
+        .assessment-icon { background: #FF9800; }
+        .plan-icon { background: #9C27B0; }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section-content {
+            padding-left: 50px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .vital-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vital-input label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .vital-input input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-voice {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-voice:hover {
+            background: #45a049;
+        }
+
+        .quick-actions {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quick-action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .quick-action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .status-bar {
+            background: #f0f0f0;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .template-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .template-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .template-chip:hover {
+            background: #e0e0e0;
+        }
+
+        .template-chip.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .patient-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .vitals-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">A</div>
+                <div class="logo-text">
+                    <h1>Audicia SOAP</h1>
+                    <p>Enterprise Medical Documentation</p>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#patients">Patients</a></li>
+                    <li><a href="#templates">Templates</a></li>
+                    <li><a href="#reports">Reports</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-section">
+                <div class="notification-bell">🔔</div>
+                <div class="user-avatar">DR</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="soap-container">
+            <div class="soap-header">
+                <h2>Create New SOAP Note</h2>
+                <p>Structured medical documentation with AI assistance</p>
+            </div>
+            
+            <div class="patient-info">
+                <div class="patient-info-grid">
+                    <div class="info-field">
+                        <span class="info-label">Patient Name</span>
+                        <span class="info-value">John Doe</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="info-label">MRN</span>
+                        <span class="info-value">MRN-2024-001</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="info-label">Date of Birth</span>
+                        <span class="info-value">01/15/1980</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="info-label">Visit Date</span>
+                        <span class="info-value">08/06/2025</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="soap-sections">
+                <!-- Subjective Section -->
+                <div class="soap-section">
+                    <div class="section-header">
+                        <div class="section-icon subjective-icon">S</div>
+                        <h3 class="section-title">Subjective</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="template-selector">
+                            <button class="template-chip active">Custom</button>
+                            <button class="template-chip">Follow-up</button>
+                            <button class="template-chip">New Patient</button>
+                            <button class="template-chip">Emergency</button>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Chief Complaint</label>
+                            <input type="text" class="form-input" placeholder="Enter patient's primary concern">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">History of Present Illness</label>
+                            <textarea class="form-textarea" placeholder="Describe the onset, duration, and characteristics of symptoms"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Review of Systems</label>
+                            <textarea class="form-textarea" placeholder="Document pertinent positives and negatives"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Objective Section -->
+                <div class="soap-section">
+                    <div class="section-header">
+                        <div class="section-icon objective-icon">O</div>
+                        <h3 class="section-title">Objective</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Vital Signs</label>
+                            <div class="vitals-grid">
+                                <div class="vital-input">
+                                    <label>BP (mmHg)</label>
+                                    <input type="text" placeholder="120/80">
+                                </div>
+                                <div class="vital-input">
+                                    <label>HR (bpm)</label>
+                                    <input type="text" placeholder="72">
+                                </div>
+                                <div class="vital-input">
+                                    <label>Temp (°F)</label>
+                                    <input type="text" placeholder="98.6">
+                                </div>
+                                <div class="vital-input">
+                                    <label>RR (/min)</label>
+                                    <input type="text" placeholder="16">
+                                </div>
+                                <div class="vital-input">
+                                    <label>SpO2 (%)</label>
+                                    <input type="text" placeholder="98">
+                                </div>
+                                <div class="vital-input">
+                                    <label>Weight (lbs)</label>
+                                    <input type="text" placeholder="150">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Physical Examination</label>
+                            <textarea class="form-textarea" placeholder="Document examination findings"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Laboratory/Imaging Results</label>
+                            <textarea class="form-textarea" placeholder="Enter relevant test results"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Section -->
+                <div class="soap-section">
+                    <div class="section-header">
+                        <div class="section-icon assessment-icon">A</div>
+                        <h3 class="section-title">Assessment</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Primary Diagnosis</label>
+                            <input type="text" class="form-input" placeholder="Enter primary diagnosis with ICD-10 code">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Secondary Diagnoses</label>
+                            <textarea class="form-textarea" placeholder="List additional diagnoses"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Clinical Impression</label>
+                            <textarea class="form-textarea" placeholder="Provide clinical reasoning and differential diagnoses"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Section -->
+                <div class="soap-section">
+                    <div class="section-header">
+                        <div class="section-icon plan-icon">P</div>
+                        <h3 class="section-title">Plan</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label class="form-label">Medications</label>
+                            <textarea class="form-textarea" placeholder="List medications with dosage and frequency"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Procedures/Tests</label>
+                            <textarea class="form-textarea" placeholder="Document ordered tests or procedures"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Follow-up</label>
+                            <input type="text" class="form-input" placeholder="Specify follow-up timeline">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Patient Education</label>
+                            <textarea class="form-textarea" placeholder="Document education provided to patient"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary">
+                    <span>💾</span> Save SOAP Note
+                </button>
+                <button class="btn btn-secondary">
+                    <span>📋</span> Save as Template
+                </button>
+                <button class="btn btn-voice">
+                    <span>🎤</span> Voice Dictation
+                </button>
+                <button class="btn btn-secondary">
+                    <span>👁️</span> Preview
+                </button>
+                <button class="btn btn-secondary">
+                    <span>✖️</span> Cancel
+                </button>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>Auto-saving enabled</span>
+                </div>
+                <div>Last saved: 2 minutes ago</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <button class="quick-action-btn" title="AI Assistant">🤖</button>
+        <button class="quick-action-btn" title="Templates">📄</button>
+        <button class="quick-action-btn" title="Help">❓</button>
+    </div>
+
+    <script>
+        // Initialize the application
+        console.log('Audicia SOAP Note System - Loading...');
+        
+        // Auto-save functionality
+        let autoSaveTimer;
+        const autoSave = () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                console.log('Auto-saving SOAP note...');
+                // Implement auto-save logic here
+            }, 5000);
+        };
+
+        // Add event listeners to all inputs
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.addEventListener('input', autoSave);
+        });
+
+        // Voice dictation mock
+        document.querySelector('.btn-voice').addEventListener('click', () => {
+            alert('Voice dictation feature will be available in the React application');
+        });
+
+        // Save button
+        document.querySelector('.btn-primary').addEventListener('click', () => {
+            alert('SOAP note saved successfully!');
+        });
+
+        // Template selector
+        document.querySelectorAll('.template-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                document.querySelectorAll('.template-chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

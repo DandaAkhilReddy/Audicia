@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audicia SOAP - Voice Recording</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .recording-section {
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .record-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.4);
+        }
+
+        .record-button.recording {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            animation: pulse 1.5s infinite;
+        }
+
+        .record-button.processing {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3); }
+            50% { box-shadow: 0 15px 40px rgba(244, 67, 54, 0.6); }
+            100% { box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .instructions {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f44336;
+            margin-top: 20px;
+        }
+
+        .transcription-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
+
+        .transcription-preview h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .transcription-text {
+            color: #666;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .soap-form {
+            padding: 40px;
+            display: grid;
+            gap: 30px;
+        }
+
+        .soap-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .subjective { background: #4CAF50; }
+        .objective { background: #2196F3; }
+        .assessment { background: #FF9800; }
+        .plan { background: #9C27B0; }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .vital-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vital-input label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .vital-input input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .patient-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .patient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .patient-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .patient-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        .patient-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .auto-filled {
+            background: #e8f5e8 !important;
+            border-color: #4CAF50 !important;
+            animation: highlight 2s ease-out;
+        }
+
+        @keyframes highlight {
+            0% { background: #c8e6c9; }
+            100% { background: #e8f5e8; }
+        }
+
+        @media (max-width: 768px) {
+            .vitals-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .patient-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Audicia SOAP Notes</h1>
+            <p>Voice-Powered Medical Documentation</p>
+        </div>
+
+        <div class="recording-section">
+            <button id="recordButton" class="record-button">
+                🎤
+            </button>
+            <div id="statusText" class="status-text">Ready to Record</div>
+            <div class="instructions">Click the microphone to start recording your SOAP note</div>
+            <div id="timer" class="timer" style="display: none;">00:00</div>
+            
+            <div id="transcriptionPreview" class="transcription-preview">
+                <h3>Live Transcription:</h3>
+                <div id="transcriptionText" class="transcription-text">
+                    Listening...
+                </div>
+            </div>
+        </div>
+
+        <div class="patient-info">
+            <div class="patient-grid">
+                <div class="patient-field">
+                    <span class="patient-label">Patient Name</span>
+                    <span class="patient-value" id="patientName">Loading...</span>
+                </div>
+                <div class="patient-field">
+                    <span class="patient-label">MRN</span>
+                    <span class="patient-value" id="patientMRN">Loading...</span>
+                </div>
+                <div class="patient-field">
+                    <span class="patient-label">Date of Birth</span>
+                    <span class="patient-value" id="patientDOB">Loading...</span>
+                </div>
+                <div class="patient-field">
+                    <span class="patient-label">Visit Date</span>
+                    <span class="patient-value" id="visitDate">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <form class="soap-form">
+            <!-- Subjective Section -->
+            <div class="soap-section">
+                <div class="section-header">
+                    <div class="section-icon subjective">S</div>
+                    <h3 class="section-title">Subjective</h3>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chief Complaint</label>
+                    <input type="text" id="chiefComplaint" class="form-input" placeholder="Patient's primary concern">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">History of Present Illness</label>
+                    <textarea id="historyPresentIllness" class="form-textarea" placeholder="Detailed history of current symptoms"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Review of Systems</label>
+                    <textarea id="reviewOfSystems" class="form-textarea" placeholder="Systematic review of symptoms"></textarea>
+                </div>
+            </div>
+
+            <!-- Objective Section -->
+            <div class="soap-section">
+                <div class="section-header">
+                    <div class="section-icon objective">O</div>
+                    <h3 class="section-title">Objective</h3>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vital Signs</label>
+                    <div class="vitals-grid">
+                        <div class="vital-input">
+                            <label>BP (mmHg)</label>
+                            <input type="text" id="bloodPressure" placeholder="120/80">
+                        </div>
+                        <div class="vital-input">
+                            <label>HR (bpm)</label>
+                            <input type="text" id="heartRate" placeholder="72">
+                        </div>
+                        <div class="vital-input">
+                            <label>Temp (°F)</label>
+                            <input type="text" id="temperature" placeholder="98.6">
+                        </div>
+                        <div class="vital-input">
+                            <label>RR (/min)</label>
+                            <input type="text" id="respiratoryRate" placeholder="16">
+                        </div>
+                        <div class="vital-input">
+                            <label>SpO2 (%)</label>
+                            <input type="text" id="oxygenSaturation" placeholder="98">
+                        </div>
+                        <div class="vital-input">
+                            <label>Weight (lbs)</label>
+                            <input type="text" id="weight" placeholder="150">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Physical Examination</label>
+                    <textarea id="physicalExam" class="form-textarea" placeholder="Physical examination findings"></textarea>
+                </div>
+            </div>
+
+            <!-- Assessment Section -->
+            <div class="soap-section">
+                <div class="section-header">
+                    <div class="section-icon assessment">A</div>
+                    <h3 class="section-title">Assessment</h3>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Primary Diagnosis</label>
+                    <input type="text" id="primaryDiagnosis" class="form-input" placeholder="Primary diagnosis">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinical Impression</label>
+                    <textarea id="clinicalImpression" class="form-textarea" placeholder="Clinical assessment and reasoning"></textarea>
+                </div>
+            </div>
+
+            <!-- Plan Section -->
+            <div class="soap-section">
+                <div class="section-header">
+                    <div class="section-icon plan">P</div>
+                    <h3 class="section-title">Plan</h3>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Treatment Plan</label>
+                    <textarea id="treatmentPlan" class="form-textarea" placeholder="Medications, procedures, tests"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Follow-up Instructions</label>
+                    <textarea id="followUpInstructions" class="form-textarea" placeholder="Follow-up care and instructions"></textarea>
+                </div>
+            </div>
+        </form>
+
+        <div class="action-buttons">
+            <button type="button" class="btn btn-primary" onclick="saveSOAPNote()">
+                💾 Save SOAP Note
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                🗑️ Clear Form
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="exportPDF()">
+                📄 Export PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Processing Audio...</h3>
+            <p>Converting speech to SOAP note</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let recordingStartTime;
+        let timerInterval;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePatientInfo();
+            setupRecording();
+        });
+
+        function initializePatientInfo() {
+            // Simulate loading patient data
+            setTimeout(() => {
+                document.getElementById('patientName').textContent = 'John Smith';
+                document.getElementById('patientMRN').textContent = 'MRN-2025-0001';
+                document.getElementById('patientDOB').textContent = '03/15/1975';
+                document.getElementById('visitDate').textContent = new Date().toLocaleDateString();
+            }, 1000);
+        }
+
+        async function setupRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = function() {
+                    processRecording();
+                };
+
+                console.log('Recording setup completed successfully');
+            } catch (error) {
+                console.error('Error setting up recording:', error);
+                document.getElementById('statusText').textContent = 'Microphone access denied';
+            }
+        }
+
+        function toggleRecording() {
+            const recordButton = document.getElementById('recordButton');
+            const statusText = document.getElementById('statusText');
+            const timer = document.getElementById('timer');
+            const transcriptionPreview = document.getElementById('transcriptionPreview');
+
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        function startRecording() {
+            if (!mediaRecorder) {
+                alert('Recording not available. Please check microphone permissions.');
+                return;
+            }
+
+            recordedChunks = [];
+            isRecording = true;
+            recordingStartTime = Date.now();
+
+            const recordButton = document.getElementById('recordButton');
+            const statusText = document.getElementById('statusText');
+            const timer = document.getElementById('timer');
+            const transcriptionPreview = document.getElementById('transcriptionPreview');
+
+            recordButton.classList.add('recording');
+            recordButton.textContent = '🔴';
+            statusText.textContent = 'Recording... Click to stop';
+            timer.style.display = 'block';
+            transcriptionPreview.style.display = 'block';
+
+            mediaRecorder.start();
+            startTimer();
+            simulateLiveTranscription();
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+
+            isRecording = false;
+            const recordButton = document.getElementById('recordButton');
+            const statusText = document.getElementById('statusText');
+
+            recordButton.classList.remove('recording');
+            recordButton.classList.add('processing');
+            recordButton.textContent = '⏳';
+            statusText.textContent = 'Processing audio...';
+
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (isRecording) {
+                    const elapsed = Date.now() - recordingStartTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    document.getElementById('timer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function simulateLiveTranscription() {
+            const transcriptionText = document.getElementById('transcriptionText');
+            const sampleTranscripts = [
+                "Patient is a 45-year-old male...",
+                "presenting with chief complaint of chest pain...",
+                "pain started 2 hours ago, described as pressure-like...",
+                "vital signs show blood pressure 140 over 90...",
+                "heart rate 88 beats per minute...",
+                "physical exam reveals regular rate and rhythm..."
+            ];
+
+            let index = 0;
+            const transcriptionInterval = setInterval(() => {
+                if (!isRecording) {
+                    clearInterval(transcriptionInterval);
+                    return;
+                }
+                
+                if (index < sampleTranscripts.length) {
+                    transcriptionText.textContent += sampleTranscripts[index] + ' ';
+                    index++;
+                }
+            }, 3000);
+        }
+
+        function processRecording() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = 'flex';
+
+            // Simulate processing time
+            setTimeout(() => {
+                fillSOAPNoteFromRecording();
+                resetRecordingUI();
+                loadingOverlay.style.display = 'none';
+            }, 3000);
+        }
+
+        function fillSOAPNoteFromRecording() {
+            // Simulate AI processing results
+            const mockSOAPData = {
+                chiefComplaint: "Chest pain for 2 hours",
+                historyPresentIllness: "45-year-old male presents with acute onset chest pain that started approximately 2 hours ago. Pain is described as pressure-like, substernal, radiating to left arm. Associated with mild shortness of breath and diaphoresis. No nausea or vomiting. Pain scale 7/10.",
+                reviewOfSystems: "Cardiovascular: chest pain, mild SOB. Respiratory: no cough or wheezing. GI: no nausea or vomiting. Neurologic: no dizziness or syncope.",
+                bloodPressure: "140/90",
+                heartRate: "88",
+                temperature: "98.4",
+                respiratoryRate: "18",
+                oxygenSaturation: "96",
+                weight: "180",
+                physicalExam: "General: Alert, mild distress. Cardiovascular: Regular rate and rhythm, no murmurs. Respiratory: Clear to auscultation bilaterally. No peripheral edema.",
+                primaryDiagnosis: "Acute chest pain, rule out ACS",
+                clinicalImpression: "Middle-aged male with acute chest pain concerning for possible acute coronary syndrome. Risk factors include age and presentation. EKG and troponins needed for further evaluation.",
+                treatmentPlan: "1. EKG stat 2. Troponin levels 3. Aspirin 325mg 4. Nitroglycerin SL PRN 5. Continuous cardiac monitoring",
+                followUpInstructions: "Cardiology consult if troponins elevated. Discharge home if EKG and troponins negative with 24-hour follow-up. Return for worsening symptoms."
+            };
+
+            // Fill form fields with animation
+            fillFieldWithAnimation('chiefComplaint', mockSOAPData.chiefComplaint);
+            fillFieldWithAnimation('historyPresentIllness', mockSOAPData.historyPresentIllness);
+            fillFieldWithAnimation('reviewOfSystems', mockSOAPData.reviewOfSystems);
+            fillFieldWithAnimation('bloodPressure', mockSOAPData.bloodPressure);
+            fillFieldWithAnimation('heartRate', mockSOAPData.heartRate);
+            fillFieldWithAnimation('temperature', mockSOAPData.temperature);
+            fillFieldWithAnimation('respiratoryRate', mockSOAPData.respiratoryRate);
+            fillFieldWithAnimation('oxygenSaturation', mockSOAPData.oxygenSaturation);
+            fillFieldWithAnimation('weight', mockSOAPData.weight);
+            fillFieldWithAnimation('physicalExam', mockSOAPData.physicalExam);
+            fillFieldWithAnimation('primaryDiagnosis', mockSOAPData.primaryDiagnosis);
+            fillFieldWithAnimation('clinicalImpression', mockSOAPData.clinicalImpression);
+            fillFieldWithAnimation('treatmentPlan', mockSOAPData.treatmentPlan);
+            fillFieldWithAnimation('followUpInstructions', mockSOAPData.followUpInstructions);
+        }
+
+        function fillFieldWithAnimation(fieldId, value) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Add auto-filled class for visual feedback
+                field.classList.add('auto-filled');
+                
+                // Simulate typing effect
+                field.value = '';
+                let index = 0;
+                const typingInterval = setInterval(() => {
+                    field.value += value[index];
+                    index++;
+                    if (index >= value.length) {
+                        clearInterval(typingInterval);
+                        // Remove animation class after a delay
+                        setTimeout(() => {
+                            field.classList.remove('auto-filled');
+                        }, 2000);
+                    }
+                }, 20);
+            }
+        }
+
+        function resetRecordingUI() {
+            const recordButton = document.getElementById('recordButton');
+            const statusText = document.getElementById('statusText');
+            const timer = document.getElementById('timer');
+            const transcriptionPreview = document.getElementById('transcriptionPreview');
+
+            recordButton.classList.remove('recording', 'processing');
+            recordButton.textContent = '🎤';
+            statusText.textContent = 'SOAP Note Generated Successfully!';
+            timer.style.display = 'none';
+            transcriptionPreview.style.display = 'none';
+            
+            // Reset status after a few seconds
+            setTimeout(() => {
+                statusText.textContent = 'Ready to Record';
+            }, 3000);
+        }
+
+        // Add click event listener to record button
+        document.getElementById('recordButton').addEventListener('click', toggleRecording);
+
+        function saveSOAPNote() {
+            // Collect all form data
+            const soapData = {
+                patientName: document.getElementById('patientName').textContent,
+                patientMRN: document.getElementById('patientMRN').textContent,
+                visitDate: document.getElementById('visitDate').textContent,
+                chiefComplaint: document.getElementById('chiefComplaint').value,
+                historyPresentIllness: document.getElementById('historyPresentIllness').value,
+                reviewOfSystems: document.getElementById('reviewOfSystems').value,
+                vitals: {
+                    bloodPressure: document.getElementById('bloodPressure').value,
+                    heartRate: document.getElementById('heartRate').value,
+                    temperature: document.getElementById('temperature').value,
+                    respiratoryRate: document.getElementById('respiratoryRate').value,
+                    oxygenSaturation: document.getElementById('oxygenSaturation').value,
+                    weight: document.getElementById('weight').value
+                },
+                physicalExam: document.getElementById('physicalExam').value,
+                primaryDiagnosis: document.getElementById('primaryDiagnosis').value,
+                clinicalImpression: document.getElementById('clinicalImpression').value,
+                treatmentPlan: document.getElementById('treatmentPlan').value,
+                followUpInstructions: document.getElementById('followUpInstructions').value
+            };
+
+            // Save to local storage (in production, this would be an API call)
+            localStorage.setItem('currentSOAPNote', JSON.stringify(soapData));
+            
+            alert('SOAP Note saved successfully!');
+            console.log('Saved SOAP Note:', soapData);
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data?')) {
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    if (input.type !== 'button' && input.type !== 'submit') {
+                        input.value = '';
+                        input.classList.remove('auto-filled');
+                    }
+                });
+            }
+        }
+
+        function exportPDF() {
+            alert('PDF export functionality would be implemented here.\nThe SOAP note would be formatted and downloaded as a PDF.');
+        }
+
+        // Auto-save functionality
+        let autoSaveTimer;
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.addEventListener('input', () => {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(saveSOAPNote, 10000); // Auto-save after 10 seconds of inactivity
+            });
+        });
+    </script>
+</body>
+</html>
